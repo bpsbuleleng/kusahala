@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Struk Pesanan — Koperasi</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="app-header"></header>
+
+  <div class="container">
+    <div class="section" id="struk-area">
+      <h1 class="page-title text-center">Struk Pesanan</h1>
+      <div id="meta" class="mb-3 text-muted"></div>
+      <div class="table-wrap">
+        <table class="tbl" id="tbl-struk">
+          <thead><tr><th>Nama Barang</th><th>Jumlah</th><th>Harga</th><th>Total</th></tr></thead>
+          <tbody></tbody>
+          <tfoot><tr><td colspan="3">Grand Total</td><td id="grand">Rp0</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="d-print-none" style="display:flex;gap:10px;margin-top:12px">
+      <button class="btn btn-primary btn-block" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+      <a class="btn btn-outline btn-block" href="index.html">Kembali</a>
+    </div>
+  </div>
+
+  <nav id="app-bottomnav" class="bottomnav d-print-none"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/struk.js"></script>
+</body>
+</html>

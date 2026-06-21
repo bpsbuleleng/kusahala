@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin · Barang — Koperasi</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="app-header"></header>
+
+  <div class="container">
+    <div class="toolbar">
+      <a class="btn btn-primary" href="admin-barang.html">📦 Barang</a>
+      <a class="btn btn-outline" href="admin-pegawai.html">👤 Pegawai</a>
+      <a class="btn btn-outline" href="laporan.html">📊 Laporan</a>
+    </div>
+
+    <div class="section">
+      <div class="toolbar" style="margin:0 0 12px">
+        <input id="cari" type="search" placeholder="Cari barang…" style="flex:1;min-width:160px">
+        <button class="btn btn-green" id="btn-tambah">+ Tambah Barang</button>
+      </div>
+      <div class="table-wrap">
+        <table class="tbl" id="tabel">
+          <thead><tr><th>Gambar</th><th>Nama</th><th>Deskripsi</th><th>Harga Beli</th><th>Harga Jual</th><th>Aksi</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="text-center mt-3">
+        <button class="btn btn-outline" id="btn-more" hidden>Muat lebih banyak</button>
+      </div>
+    </div>
+    <p class="text-muted" style="font-size:12px">💡 Klik sel Nama/Deskripsi/Harga untuk mengedit langsung, lalu klik di luar sel untuk menyimpan.</p>
+  </div>
+
+  <!-- Modal tambah/edit -->
+  <div class="modal-back" id="modal" hidden>
+    <div class="modal">
+      <h3 id="modal-title">Tambah Barang</h3>
+      <div class="body">
+        <input type="hidden" id="f-id">
+        <div class="field"><label>Nama</label><input id="f-nama" type="text"></div>
+        <div class="field"><label>Deskripsi</label><textarea id="f-deskripsi" rows="2"></textarea></div>
+        <div class="field"><label>Harga Beli</label><input id="f-beli" type="number" value="0"></div>
+        <div class="field"><label>Harga Jual</label><input id="f-jual" type="number" value="0"></div>
+        <div class="field">
+          <label>Gambar (JPG/PNG)</label>
+          <input id="f-gambar" type="file" accept=".jpg,.jpeg,.png">
+          <img id="f-preview" class="mt-2" style="max-height:140px;border-radius:8px;display:none">
+        </div>
+      </div>
+      <div class="foot">
+        <button class="btn btn-outline" data-close>Batal</button>
+        <button class="btn btn-primary" id="f-simpan">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <nav id="app-bottomnav" class="bottomnav"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/admin-barang.js"></script>
+</body>
+</html>

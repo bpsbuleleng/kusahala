@@ -1,0 +1,18 @@
+# === Data sensitif & artefak setup — disimpan LOKAL saja, tidak dipublikasikan ===
+# (komentar harus di baris sendiri; git tidak mendukung komentar di akhir pola)
+
+# 40MB gambar; live site memakai Supabase Storage, bukan repo
+uploads/
+
+# dump MySQL asli (berisi nama pegawai & transaksi)
+if0_38786425_kusahala.sql
+
+# data hasil konversi (berisi nama pegawai & transaksi)
+supabase/seed.sql
+
+# === OS / editor ===
+.DS_Store
+Thumbs.db
+desktop.ini
+node_modules/
+*.log

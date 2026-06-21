@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Keranjang — Koperasi</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="app-header"></header>
+
+  <div class="container">
+    <h1 class="page-title">Keranjang</h1>
+
+    <div class="section" id="pegawai-box">
+      <div class="field">
+        <label>👤 Pegawai pemesan</label>
+        <select id="pegawai"><option value="">Memuat…</option></select>
+      </div>
+    </div>
+
+    <div class="section">
+      <div id="items"></div>
+      <div id="empty" class="empty-state" hidden>
+        <div class="em">🛒</div>
+        <p>Keranjang masih kosong.</p>
+        <a href="index.html" class="btn btn-primary">Mulai Belanja</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="checkout-bar" id="checkout-bar" hidden>
+    <div class="total">
+      <small>Total (<span id="cb-qty">0</span> barang)</small>
+      <b id="cb-total">Rp0</b>
+    </div>
+    <button class="btn btn-primary" id="btn-kirim">Kirim Pesanan</button>
+  </div>
+
+  <nav id="app-bottomnav" class="bottomnav"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/keranjang.js"></script>
+</body>
+</html>
