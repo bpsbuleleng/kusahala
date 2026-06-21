@@ -18,10 +18,10 @@
       <span id="admin-bar" style="margin-left:auto;display:flex;align-items:center"></span>
     </div>
 
-    <h1 class="page-title">Daftar Pesanan</h1>
+    <h1 class="page-title">Daftar & Edit Pesanan</h1>
     <p class="text-muted" style="font-size:13px;margin-top:-6px">
-      Ubah <b>tanggal pesanan</b> agar masuk ke periode laporan yang benar
-      (mis. pesanan susulan awal bulan depan dipindah ke akhir bulan ini), lalu klik <b>Simpan</b>.
+      Ubah tanggal/pegawai, tambah-hapus item, atau ubah kuantitas bila barang tidak tersedia saat belanja.
+      Perubahan langsung tersimpan dan ikut terhitung saat <b>Generate Laporan</b>.
     </p>
 
     <div class="toolbar">
@@ -31,12 +31,27 @@
       <span id="info" class="text-muted" style="font-size:13px;align-self:center"></span>
     </div>
 
-    <div class="table-wrap">
-      <table class="tbl" id="tabel">
-        <thead><tr><th style="width:170px">Tanggal Pesan</th><th>Pegawai</th><th>Isi Pesanan</th><th style="width:90px">Aksi</th></tr></thead>
-        <tbody></tbody>
-      </table>
+    <!-- Rekap -->
+    <div class="section" id="rekap">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+        <div style="background:var(--brand);color:#fff;padding:12px;border-radius:8px">
+          <small>Total Beli</small><div id="rk-beli" style="font-weight:700;font-size:16px">Rp0</div></div>
+        <div style="background:var(--green);color:#fff;padding:12px;border-radius:8px">
+          <small>Total Jual</small><div id="rk-jual" style="font-weight:700;font-size:16px">Rp0</div></div>
+        <div style="background:#f4b400;color:#222;padding:12px;border-radius:8px">
+          <small>Keuntungan</small><div id="rk-untung" style="font-weight:700;font-size:16px">Rp0</div></div>
+      </div>
+      <div class="text-muted" style="font-size:13px;text-align:center;margin-top:8px" id="rk-count">0 pesanan</div>
     </div>
+
+    <!-- Tambah pesanan baru -->
+    <div class="toolbar">
+      <select id="np-pegawai" style="min-width:180px"></select>
+      <input type="date" id="np-tgl" style="width:150px">
+      <button class="btn btn-green" id="btn-add-order">+ Pesanan Baru</button>
+    </div>
+
+    <div id="orders"></div>
   </div>
 
   <nav id="app-bottomnav" class="bottomnav"></nav>
