@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin · Pesanan — Koperasi</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="app-header"></header>
+
+  <div class="container">
+    <div class="toolbar">
+      <a class="btn btn-outline" href="admin-barang.html">📦 Barang</a>
+      <a class="btn btn-outline" href="admin-pegawai.html">👤 Pegawai</a>
+      <a class="btn btn-primary" href="admin-pesanan.html">🧾 Pesanan</a>
+      <a class="btn btn-outline" href="laporan.html">📊 Laporan</a>
+      <span id="admin-bar" style="margin-left:auto;display:flex;align-items:center"></span>
+    </div>
+
+    <h1 class="page-title">Daftar Pesanan</h1>
+    <p class="text-muted" style="font-size:13px;margin-top:-6px">
+      Ubah <b>tanggal pesanan</b> agar masuk ke periode laporan yang benar
+      (mis. pesanan susulan awal bulan depan dipindah ke akhir bulan ini), lalu klik <b>Simpan</b>.
+    </p>
+
+    <div class="toolbar">
+      <label style="display:flex;align-items:center;gap:6px">Dari <input type="date" id="dari"></label>
+      <label style="display:flex;align-items:center;gap:6px">Sampai <input type="date" id="sampai"></label>
+      <button class="btn btn-primary" id="btn-tampil">Tampilkan</button>
+      <span id="info" class="text-muted" style="font-size:13px;align-self:center"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="tbl" id="tabel">
+        <thead><tr><th style="width:170px">Tanggal Pesan</th><th>Pegawai</th><th>Isi Pesanan</th><th style="width:90px">Aksi</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <nav id="app-bottomnav" class="bottomnav"></nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/admin-pesanan.js"></script>
+</body>
+</html>
