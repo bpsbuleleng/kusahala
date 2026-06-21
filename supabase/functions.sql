@@ -71,21 +71,18 @@ as $$
 $$;
 
 -- ---------------------------------------------------------------------
--- generate_laporan: bikin snapshot laporan bulanan (generate_ke++)
---   meniru generate_laporan.php
---   return = nomor generate_ke yang baru
+-- generate_laporan: snapshot laporan bulanan (MENGGANTI, bukan menumpuk)
+--   Generate ulang bulan yang sama akan MENGHAPUS snapshot lama bulan itu
+--   lalu menulis yang baru. Jadi hanya ada 1 snapshot terakhir per bulan
+--   (generate_ke selalu 1). Mencegah tabel laporan membengkak.
 -- ---------------------------------------------------------------------
 create or replace function generate_laporan(p_bulan int, p_tahun int)
 returns int
 language plpgsql
 as $$
-declare
-  v_gen int;
 begin
-  select coalesce(max(generate_ke), 0) + 1
-    into v_gen
-  from laporan
-  where bulan = p_bulan and tahun = p_tahun;
+  -- buang snapshot lama bulan ini supaya tidak menumpuk
+  delete from laporan where bulan = p_bulan and tahun = p_tahun;
 
   insert into laporan (
     bulan, tahun, nama_pegawai, nama_barang,
@@ -98,7 +95,7 @@ begin
     b.harga_beli * sum(dp.kuantitas),
     b.harga_jual * sum(dp.kuantitas),
     (b.harga_jual - b.harga_beli) * sum(dp.kuantitas),
-    v_gen
+    1
   from detail_pesanan dp
   join pesanan p  on p.id  = dp.pesanan_id
   join pegawai pg on pg.id = p.pegawai_id
@@ -107,6 +104,6 @@ begin
     and extract(year  from p.tanggal) = p_tahun
   group by pg.id, pg.nama, b.id, b.nama, b.harga_beli, b.harga_jual;
 
-  return v_gen;
+  return 1;
 end;
 $$;
