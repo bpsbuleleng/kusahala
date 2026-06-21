@@ -25,25 +25,6 @@
     </div>
   </div>
 
-  <button id="fab-tambah" class="btn btn-primary" style="position:fixed;right:14px;bottom:120px;z-index:95;border-radius:999px;box-shadow:var(--shadow)">+ Barang Baru</button>
-
-  <!-- Modal tambah barang cepat (tanpa gambar, seperti form lama) -->
-  <div class="modal-back" id="modal-tambah" hidden>
-    <div class="modal">
-      <h3>Tambah Barang Baru</h3>
-      <div class="body">
-        <div class="field"><label>Nama Barang</label><input id="t-nama" type="text"></div>
-        <div class="field"><label>Deskripsi</label><textarea id="t-deskripsi" rows="2"></textarea></div>
-        <div class="field"><label>Jumlah untuk dipesan</label><input id="t-jumlah" type="number" min="1" value="1"></div>
-        <p class="text-muted" style="font-size:12px;margin:0">Harga & gambar bisa dilengkapi nanti di menu Admin.</p>
-      </div>
-      <div class="foot">
-        <button class="btn btn-outline" data-close>Batal</button>
-        <button class="btn btn-primary" id="t-simpan">Tambah & Masukkan Keranjang</button>
-      </div>
-    </div>
-  </div>
-
   <nav id="app-bottomnav" class="bottomnav"></nav>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

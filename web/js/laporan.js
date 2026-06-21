@@ -5,8 +5,10 @@
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli',
                'Agustus','September','Oktober','November','Desember'];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!await guardAdmin()) return;
   renderShell('admin');
+  renderAdminBar();
   initFilter();
   document.getElementById('btn-tampil').onclick = muat;
   document.getElementById('btn-generate').onclick = generate;

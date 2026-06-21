@@ -32,6 +32,16 @@ const MIME = {
 };
 
 async function main() {
+  // Pastikan bucket ada & publik (buat bila belum)
+  const mk = await fetch(`${URL}/storage/v1/bucket`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: BUCKET, name: BUCKET, public: true })
+  });
+  if (mk.ok) console.log(`Bucket "${BUCKET}" dibuat (public).`);
+  else if (mk.status === 409) console.log(`Bucket "${BUCKET}" sudah ada.`);
+  else { console.error(`Gagal membuat bucket: ${mk.status} ${await mk.text()}`); process.exit(1); }
+
   const files = fs.readdirSync(DIR).filter(f => MIME[path.extname(f).toLowerCase()]);
   console.log(`Menemukan ${files.length} gambar di ${DIR}`);
   let ok = 0, skip = 0, fail = 0;

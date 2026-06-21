@@ -4,8 +4,10 @@
 const PAGE = 30;
 let page = 0, done = false, keyword = '';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!await guardAdmin()) return;
   renderShell('admin');
+  renderAdminBar();
   document.getElementById('btn-tambah').onclick = () => openModal();
   document.getElementById('btn-more').onclick = () => load();
   document.getElementById('cari').addEventListener('input', debounce(e => {

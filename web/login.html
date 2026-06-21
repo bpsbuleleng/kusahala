@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Masuk Admin — Koperasi</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container" style="max-width:380px;margin-top:18vh">
+    <h1 class="page-title" style="text-align:center">🔐 Masuk Admin</h1>
+    <form id="form" class="section" style="display:grid;gap:12px">
+      <div class="field"><label>Email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="field"><label>Sandi</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn btn-primary" id="btn-masuk" type="submit">Masuk</button>
+      <a class="btn btn-outline" href="index.html" style="text-align:center">← Kembali ke Belanja</a>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

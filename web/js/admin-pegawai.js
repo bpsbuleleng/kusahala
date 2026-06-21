@@ -1,6 +1,8 @@
 /* admin-pegawai.js — CRUD pegawai */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!await guardAdmin()) return;
   renderShell('admin');
+  renderAdminBar();
   document.getElementById('btn-tambah').onclick = tambah;
   document.getElementById('f-nama').addEventListener('keydown', e => { if (e.key === 'Enter') tambah(); });
   load();

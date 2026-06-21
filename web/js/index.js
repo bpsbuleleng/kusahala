@@ -22,7 +22,6 @@ document.addEventListener('DOMContentLoaded', init);
 async function init() {
   renderShell('index');
   bindSearch();
-  bindFab();
   await loadPegawai();
   setupInfiniteScroll();
   resetAndLoad();
@@ -195,38 +194,6 @@ function showSkeleton() {
   grid.innerHTML = h;
 }
 function clearSkeleton() { grid.innerHTML = ''; }
-
-/* ---------- Modal tambah barang cepat ---------- */
-function bindFab() {
-  const modal = document.getElementById('modal-tambah');
-  document.getElementById('fab-tambah').onclick = () => { modal.hidden = false; };
-  modal.querySelectorAll('[data-close]').forEach(b => b.onclick = () => modal.hidden = true);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.hidden = true; });
-
-  document.getElementById('t-simpan').onclick = async () => {
-    const nama = document.getElementById('t-nama').value.trim();
-    const deskripsi = document.getElementById('t-deskripsi').value.trim();
-    const jumlah = parseInt(document.getElementById('t-jumlah').value) || 1;
-    if (!nama || !deskripsi) { toast('Nama & deskripsi wajib diisi', 'danger'); return; }
-
-    // cek duplikat (seperti tambah_barang_form_pemesanan.php)
-    const { count } = await sb.from('barang').select('id', { count: 'exact', head: true }).eq('nama', nama);
-    if (count > 0) { toast('Barang sudah ada', 'danger'); return; }
-
-    const { data, error } = await sb.from('barang')
-      .insert({ nama, deskripsi, harga_jual: 0, harga_beli: 0, gambar: 'default.jpg' })
-      .select('id,nama,harga_jual,gambar').single();
-    if (error) { toast('Gagal menambah barang', 'danger'); return; }
-
-    Cart.setItem(data, jumlah);
-    refreshCartBadge();
-    modal.hidden = true;
-    document.getElementById('t-nama').value = '';
-    document.getElementById('t-deskripsi').value = '';
-    toast('Barang ditambahkan', 'success');
-    resetAndLoad();
-  };
-}
 
 /* ---------- util ---------- */
 function debounce(fn, ms) {
