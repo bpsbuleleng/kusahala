@@ -22,9 +22,39 @@ document.addEventListener('DOMContentLoaded', init);
 async function init() {
   renderShell('index');
   bindSearch();
+  // delegasi interaksi kartu untuk grid utama + baris rekomendasi
+  attachCardHandlers(grid);
+  attachCardHandlers(document.getElementById('rec-bestseller-row'));
+  attachCardHandlers(document.getElementById('rec-personal-row'));
   await loadPegawai();
+  loadRecommendations();
   setupInfiniteScroll();
   resetAndLoad();
+}
+
+/* ---------- Rekomendasi ---------- */
+async function loadRecommendations() {
+  loadBestSeller();
+  loadPersonal(Cart.getPegawai());
+}
+
+async function loadBestSeller() {
+  const { data, error } = await sb.rpc('best_seller', { p_limit: 12 });
+  renderRec('rec-bestseller', data, error);
+}
+
+async function loadPersonal(pegawaiId) {
+  if (!pegawaiId) { document.getElementById('rec-personal').hidden = true; return; }
+  const { data, error } = await sb.rpc('rekomendasi_pegawai', { p_pegawai_id: Number(pegawaiId), p_limit: 12 });
+  renderRec('rec-personal', data, error);
+}
+
+function renderRec(secId, data, error) {
+  const sec = document.getElementById(secId);
+  const row = document.getElementById(secId + '-row');
+  if (error || !data || !data.length) { sec.hidden = true; row.innerHTML = ''; return; }
+  row.innerHTML = data.map(cardHtml).join('');
+  sec.hidden = false;
 }
 
 /* ---------- Pegawai ---------- */
@@ -35,7 +65,10 @@ async function loadPegawai() {
   const saved = Cart.getPegawai();
   sel.innerHTML = '<option value="">-- Pilih Pegawai --</option>' +
     data.map(p => `<option value="${p.id}" ${saved == p.id ? 'selected' : ''}>${esc(p.nama)}</option>`).join('');
-  sel.addEventListener('change', () => Cart.setPegawai(sel.value));
+  sel.addEventListener('change', () => {
+    Cart.setPegawai(sel.value);
+    loadPersonal(sel.value);          // perbarui rekomendasi pribadi
+  });
 }
 
 /* ---------- Pencarian ---------- */
@@ -133,8 +166,14 @@ function footHtml(id, qty) {
   return `<button class="btn-add" data-act="add">+ Keranjang</button>`;
 }
 
-/* ---------- Interaksi kartu (event delegation) ---------- */
-grid.addEventListener('click', (e) => {
+/* ---------- Interaksi kartu (event delegation, dipakai grid & rekomendasi) ---------- */
+function attachCardHandlers(el) {
+  if (!el) return;
+  el.addEventListener('click', onCardClick);
+  el.addEventListener('change', onCardChange);
+}
+
+function onCardClick(e) {
   const card = e.target.closest('.card');
   if (!card) return;
   const act = e.target.dataset.act;
@@ -144,9 +183,9 @@ grid.addEventListener('click', (e) => {
   if (act === 'add') { changeQty(card, barang, 1); }
   else if (act === 'inc') { changeQty(card, barang, Cart.getQty(barang.id) + 1); }
   else if (act === 'dec') { changeQty(card, barang, Cart.getQty(barang.id) - 1); }
-});
+}
 
-grid.addEventListener('change', (e) => {
+function onCardChange(e) {
   const card = e.target.closest('.card');
   if (!card) return;
   const barang = readCard(card);
@@ -155,7 +194,7 @@ grid.addEventListener('change', (e) => {
   } else if (e.target.dataset.act === 'note') {
     Cart.setCatatan(barang.id, e.target.value);
   }
-});
+}
 
 function readCard(card) {
   return {
@@ -168,17 +207,26 @@ function readCard(card) {
 
 function changeQty(card, barang, qty) {
   Cart.setItem(barang, qty);
-  card.classList.toggle('selected', qty > 0);
-  card.querySelector('.card-foot').innerHTML = footHtml(barang.id, Math.max(qty, 0));
+  // sinkronkan SEMUA kartu ber-id sama (grid + rekomendasi) agar konsisten
+  syncCardById(barang.id);
   refreshCartBadge();
   if (qty > 0) toast(`${barang.nama} ×${qty}`, 'success');
+}
+
+// Perbarui tampilan semua kartu dengan id produk tertentu di seluruh halaman
+function syncCardById(id) {
+  const qty = Cart.getQty(id);
+  document.querySelectorAll(`.card[data-id="${id}"]`).forEach(card => {
+    card.classList.toggle('selected', qty > 0);
+    const foot = card.querySelector('.card-foot');
+    if (foot) foot.innerHTML = footHtml(id, qty);
+  });
 }
 
 function syncCardStates() {
   document.querySelectorAll('.card').forEach(card => {
     const id = Number(card.dataset.id);
-    const qty = Cart.getQty(id);
-    card.classList.toggle('selected', qty > 0);
+    card.classList.toggle('selected', Cart.getQty(id) > 0);
   });
 }
 

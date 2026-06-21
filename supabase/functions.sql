@@ -107,3 +107,59 @@ begin
   return 1;
 end;
 $$;
+
+-- ---------------------------------------------------------------------
+-- best_seller: produk terlaris pada "bulan lalu"
+--   "bulan lalu" = bulan terakhir SEBELUM bulan berjalan yang ada datanya
+--   (mis. bila bulan ini Juni & Mei kosong, dipakai April).
+-- ---------------------------------------------------------------------
+create or replace function best_seller(p_limit int default 12)
+returns table (id int, nama text, deskripsi text, harga_jual int, gambar text, jumlah bigint)
+language sql
+stable
+as $$
+  with ref as (
+    select date_trunc('month', max(p.tanggal)) as m
+    from pesanan p
+    where p.tanggal < date_trunc('month', now())
+  )
+  select b.id, b.nama::text, b.deskripsi, b.harga_jual, b.gambar::text,
+         sum(dp.kuantitas)::bigint as jumlah
+  from detail_pesanan dp
+  join pesanan p on p.id = dp.pesanan_id
+  join barang  b on b.id = dp.barang_id
+  cross join ref
+  where ref.m is not null
+    and date_trunc('month', p.tanggal) = ref.m
+  group by b.id, b.nama, b.deskripsi, b.harga_jual, b.gambar
+  order by jumlah desc
+  limit p_limit;
+$$;
+
+-- ---------------------------------------------------------------------
+-- rekomendasi_pegawai: produk yang dipesan pegawai ini pada "bulan lalu"
+--   (memakai referensi bulan yang sama dengan best_seller)
+-- ---------------------------------------------------------------------
+create or replace function rekomendasi_pegawai(p_pegawai_id int, p_limit int default 12)
+returns table (id int, nama text, deskripsi text, harga_jual int, gambar text, jumlah bigint)
+language sql
+stable
+as $$
+  with ref as (
+    select date_trunc('month', max(p.tanggal)) as m
+    from pesanan p
+    where p.tanggal < date_trunc('month', now())
+  )
+  select b.id, b.nama::text, b.deskripsi, b.harga_jual, b.gambar::text,
+         sum(dp.kuantitas)::bigint as jumlah
+  from detail_pesanan dp
+  join pesanan p on p.id = dp.pesanan_id
+  join barang  b on b.id = dp.barang_id
+  cross join ref
+  where ref.m is not null
+    and p.pegawai_id = p_pegawai_id
+    and date_trunc('month', p.tanggal) = ref.m
+  group by b.id, b.nama, b.deskripsi, b.harga_jual, b.gambar
+  order by jumlah desc
+  limit p_limit;
+$$;
