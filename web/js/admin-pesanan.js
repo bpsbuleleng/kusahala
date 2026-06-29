@@ -64,7 +64,7 @@ async function load() {
 
   const { data, error } = await sb
     .from('pesanan')
-    .select('id,tanggal,pegawai_id,detail_pesanan(id,barang_id,kuantitas)')
+    .select('id,tanggal,pegawai_id,detail_pesanan(id,barang_id,kuantitas,catatan)')
     .gte('tanggal', dari)
     .lt('tanggal', plusDays(sampai, 1))
     .order('tanggal', { ascending: true });
@@ -73,7 +73,7 @@ async function load() {
 
   ORDERS = (data || []).map(p => ({
     id: p.id, pegawai_id: p.pegawai_id, tanggal: String(p.tanggal).slice(0, 10),
-    items: (p.detail_pesanan || []).map(d => ({ id: d.id, barang_id: d.barang_id, kuantitas: d.kuantitas }))
+    items: (p.detail_pesanan || []).map(d => ({ id: d.id, barang_id: d.barang_id, kuantitas: d.kuantitas, catatan: d.catatan || '' }))
   }));
   renderAll();
 }
@@ -106,7 +106,10 @@ function renderCard(o) {
   const rows = o.items.map(it => {
     const c = itemCalc(it);
     return `<tr data-item="${it.id}">
-      <td>${esc(c.nama)}</td>
+      <td>${esc(c.nama)}
+        <input type="text" class="ed-catatan" value="${esc(it.catatan)}" placeholder="catatan pembeli…"
+               title="Catatan dari pembeli" style="display:block;width:100%;margin-top:4px;font-size:12px;color:#555">
+      </td>
       <td><input type="number" class="ed-qty" min="1" value="${it.kuantitas}" style="width:60px"></td>
       <td style="text-align:right">${rupiah(c.hb)}</td>
       <td style="text-align:right">${rupiah(c.hj)}</td>
@@ -207,6 +210,14 @@ cont.addEventListener('change', async (e) => {
     if (error) return toast('Gagal ubah qty', 'danger');
     o.items.find(i => i.id === iid).kuantitas = q;
     updateCard(o); renderRekap(); toast('Qty diperbarui', 'success');
+
+  } else if (e.target.classList.contains('ed-catatan')) {
+    const iid = Number(e.target.closest('[data-item]').dataset.item);
+    const v = e.target.value;
+    const { error } = await sb.from('detail_pesanan').update({ catatan: v }).eq('id', iid);
+    if (error) return toast('Gagal simpan catatan', 'danger');
+    o.items.find(i => i.id === iid).catatan = v;
+    toast('Catatan disimpan', 'success');
   }
 });
 
@@ -230,18 +241,20 @@ cont.addEventListener('click', async (e) => {
 
   } else if (e.target.closest('.btn-show-add')) {
     card.querySelector('.add-area').innerHTML =
-      `<select class="add-barang" style="min-width:180px">${barangOptions()}</select>
+      `<select class="add-barang" style="min-width:160px">${barangOptions()}</select>
        <input type="number" class="add-qty" min="1" value="1" style="width:60px">
+       <input type="text" class="add-catatan" placeholder="catatan (opsional)" style="min-width:140px">
        <button class="btn btn-green btn-add-item" style="padding:4px 10px">Tambah</button>`;
 
   } else if (e.target.closest('.btn-add-item')) {
     const bid = Number(card.querySelector('.add-barang').value) || null;
     let q = parseInt(card.querySelector('.add-qty').value) || 1; if (q < 1) q = 1;
+    const cat = card.querySelector('.add-catatan').value || '';
     if (!bid) return toast('Pilih barang dulu', 'danger');
     const { data, error } = await sb.from('detail_pesanan')
-      .insert({ pesanan_id: o.id, barang_id: bid, kuantitas: q }).select('id').single();
+      .insert({ pesanan_id: o.id, barang_id: bid, kuantitas: q, catatan: cat }).select('id').single();
     if (error) return toast('Gagal tambah item', 'danger');
-    o.items.push({ id: data.id, barang_id: bid, kuantitas: q });
+    o.items.push({ id: data.id, barang_id: bid, kuantitas: q, catatan: cat });
     updateCard(o); renderRekap(); toast('Item ditambah', 'success');
   }
 });
