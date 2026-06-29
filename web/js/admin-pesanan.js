@@ -52,7 +52,151 @@ async function loadRefs() {
 function bindUI() {
   document.getElementById('btn-tampil').onclick = load;
   document.getElementById('btn-add-order').onclick = addOrder;
+  document.getElementById('btn-cetak').onclick = cetakStruk;
+  document.getElementById('btn-belanja').onclick = rekapBelanja;
   document.getElementById('np-pegawai').innerHTML = pegawaiOptions(null);
+}
+
+/* ---------- Daftar Belanja: gabungan barang yang harus dibeli ----------
+ * Read-only. Menjumlahkan qty per barang dari semua pesanan pada rentang,
+ * lengkap dengan catatan pembeli (per varian) agar mudah dicari di pasar.
+ */
+function openPrintWindow(title, inner) {
+  const css = `*{font-family:Arial,Helvetica,sans-serif}body{padding:16px;color:#222}
+    h1{font-size:18px;text-align:center;margin:0 0 4px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border:1px solid #bbb;padding:5px 6px;text-align:left;vertical-align:top}
+    th{background:#f3f3f3}small{color:#666}tfoot td{font-weight:bold}`;
+  const w = window.open('', '_blank');
+  if (!w) { toast('Izinkan popup untuk mencetak', 'danger'); return; }
+  w.document.write(`<!doctype html><html lang="id"><head><meta charset="utf-8"><title>${title}</title>` +
+    `<style>${css}</style></head><body>${inner}` +
+    `<scr` + `ipt>window.onload=function(){window.print()}</scr` + `ipt></body></html>`);
+  w.document.close();
+}
+
+function rekapBelanja() {
+  const area = document.getElementById('belanja-area');
+  if (!area.hidden) { area.hidden = true; area.innerHTML = ''; return; }   // toggle tutup
+  if (!ORDERS.length) { toast('Tidak ada pesanan untuk direkap', 'danger'); return; }
+  const dari = document.getElementById('dari').value;
+  const sampai = document.getElementById('sampai').value;
+
+  // gabungkan per barang
+  const map = new Map();   // barang_id -> { nama, qty, hb, notes:Map(catatan->qty) }
+  for (const o of ORDERS) for (const it of o.items) {
+    const b = BARANG.get(it.barang_id) || { nama: '(barang dihapus)', hb: 0 };
+    if (!map.has(it.barang_id)) map.set(it.barang_id, { nama: b.nama, qty: 0, hb: b.hb, notes: new Map() });
+    const r = map.get(it.barang_id);
+    r.qty += it.kuantitas;
+    const cat = (it.catatan || '').trim();
+    if (cat) r.notes.set(cat, (r.notes.get(cat) || 0) + it.kuantitas);
+  }
+  const rows = [...map.values()].sort((a, b) => a.nama.localeCompare(b.nama));
+
+  let grand = 0;
+  const trs = rows.map((r, i) => {
+    const tot = r.qty * r.hb; grand += tot;
+    const notes = [...r.notes.entries()].map(([c, q]) => `${esc(c)} ×${q}`).join(', ') || '—';
+    return `<tr>
+      <td style="text-align:center">${i + 1}</td>
+      <td>${esc(r.nama)}</td>
+      <td style="text-align:center"><b>${r.qty}</b></td>
+      <td style="font-size:12px">${notes}</td>
+      <td style="text-align:right">${rupiah(r.hb)}</td>
+      <td style="text-align:right">${rupiah(tot)}</td></tr>`;
+  }).join('');
+
+  const tableHtml = `<table class="tbl">
+    <thead><tr><th style="width:36px">No</th><th>Barang</th><th style="text-align:center">Qty</th>
+      <th>Catatan Pembeli</th><th style="text-align:right">H.Beli</th><th style="text-align:right">Total Beli</th></tr></thead>
+    <tbody>${trs}</tbody>
+    <tfoot><tr style="font-weight:700"><td colspan="5" style="text-align:right">Total Belanja</td>
+      <td style="text-align:right">${rupiah(grand)}</td></tr></tfoot></table>`;
+
+  area.innerHTML = `<div class="section">
+    <div class="toolbar" style="margin-bottom:8px">
+      <h3 style="margin:0">🛒 Daftar Belanja — ${rows.length} barang</h3>
+      <span class="text-muted" style="font-size:12px;align-self:center">Periode ${dari} s/d ${sampai}</span>
+      <button class="btn btn-outline" id="btn-belanja-print" style="margin-left:auto;padding:4px 10px">🖨️ Cetak</button>
+    </div>
+    <div class="table-wrap">${tableHtml}</div>
+  </div>`;
+  area.hidden = false;
+  document.getElementById('btn-belanja-print').onclick = () => openPrintWindow('Daftar Belanja',
+    `<h1>🛒 Daftar Belanja</h1>
+     <div style="text-align:center;font-size:12px;color:#555;margin-bottom:12px">Periode ${dari} s/d ${sampai} · ${rows.length} barang</div>
+     ${tableHtml}`);
+}
+
+/* ---------- Cetak struk per pegawai (semua pesanan pada rentang) ---------- */
+function pegName(id) { return (PEGAWAI.find(p => p.id === id) || {}).nama || ('#' + id); }
+
+function cetakStruk() {
+  if (!ORDERS.length) { toast('Tidak ada pesanan untuk dicetak', 'danger'); return; }
+  const dari = document.getElementById('dari').value;
+  const sampai = document.getElementById('sampai').value;
+
+  // kelompokkan item per pegawai (gabung semua pesanannya pada rentang)
+  const byPeg = new Map();
+  for (const o of ORDERS) {
+    const key = o.pegawai_id || 0;
+    if (!byPeg.has(key)) byPeg.set(key, []);
+    for (const it of o.items) {
+      const b = BARANG.get(it.barang_id) || { nama: '(barang dihapus)', hj: 0 };
+      byPeg.get(key).push({ nama: b.nama, qty: it.kuantitas, harga: b.hj, catatan: it.catatan });
+    }
+  }
+
+  const entries = [...byPeg.entries()].sort((a, b) => pegName(a[0]).localeCompare(pegName(b[0])));
+  let grandAll = 0;
+  const sections = entries.map(([pid, items], idx) => {
+    let total = 0;
+    const rows = items.sort((a, b) => a.nama.localeCompare(b.nama)).map(it => {
+      const sub = it.qty * it.harga; total += sub;
+      return `<tr>
+        <td>${esc(it.nama)}${it.catatan ? `<br><small>📝 ${esc(it.catatan)}</small>` : ''}</td>
+        <td class="c">${it.qty}</td>
+        <td class="r">${rupiah(it.harga)}</td>
+        <td class="r">${rupiah(sub)}</td></tr>`;
+    }).join('');
+    grandAll += total;
+    return `<section class="struk ${idx < entries.length - 1 ? 'pb' : ''}">
+      <h2>${esc(pegName(pid))}</h2>
+      <table>
+        <thead><tr><th>Barang</th><th class="c">Qty</th><th class="r">Harga</th><th class="r">Total</th></tr></thead>
+        <tbody>${rows}</tbody>
+        <tfoot><tr><td colspan="3" class="r">Total</td><td class="r">${rupiah(total)}</td></tr></tfoot>
+      </table>
+    </section>`;
+  }).join('');
+
+  const css = `*{font-family:Arial,Helvetica,sans-serif;box-sizing:border-box}
+    body{margin:0;padding:16px;color:#222}
+    .head{text-align:center;margin-bottom:16px}
+    .head h1{font-size:18px;margin:0 0 4px}.head div{font-size:12px;color:#555}
+    .struk{margin-bottom:22px}
+    .struk h2{font-size:15px;margin:0 0 6px;border-bottom:2px solid #333;padding-bottom:4px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th,td{border-bottom:1px solid #ddd;padding:5px 6px;text-align:left;vertical-align:top}
+    th{background:#f3f3f3}.c{text-align:center}.r{text-align:right}small{color:#666}
+    tfoot td{border-top:2px solid #333;font-weight:bold}
+    .grand{text-align:right;font-size:15px;font-weight:bold;margin-top:8px}
+    @media print{.pb{page-break-after:always}.grand{page-break-before:avoid}}`;
+
+  const html = `<!doctype html><html lang="id"><head><meta charset="utf-8">
+    <title>Struk Pesanan per Pegawai</title><style>${css}</style></head><body>
+    <div class="head"><h1>🛒 Koperasi — Struk Pesanan</h1>
+      <div>Periode ${dari} s/d ${sampai} · ${entries.length} pegawai · ${ORDERS.length} pesanan</div></div>
+    ${sections}
+    <div class="grand">Total semua: ${rupiah(grandAll)}</div>
+    <scr` + `ipt>window.onload=function(){window.print()}</scr` + `ipt>
+    </body></html>`;
+
+  const w = window.open('', '_blank');
+  if (!w) { toast('Izinkan popup untuk mencetak', 'danger'); return; }
+  w.document.write(html);
+  w.document.close();
 }
 
 /* ---------- muat pesanan dalam rentang ---------- */

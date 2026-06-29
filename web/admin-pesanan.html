@@ -28,6 +28,8 @@
       <label style="display:flex;align-items:center;gap:6px">Dari <input type="date" id="dari"></label>
       <label style="display:flex;align-items:center;gap:6px">Sampai <input type="date" id="sampai"></label>
       <button class="btn btn-primary" id="btn-tampil">Tampilkan</button>
+      <button class="btn btn-outline" id="btn-cetak">🖨️ Cetak Struk per Orang</button>
+      <button class="btn btn-outline" id="btn-belanja">🛒 Daftar Belanja</button>
       <span id="info" class="text-muted" style="font-size:13px;align-self:center"></span>
     </div>
 
@@ -43,6 +45,9 @@
       </div>
       <div class="text-muted" style="font-size:13px;text-align:center;margin-top:8px" id="rk-count">0 pesanan</div>
     </div>
+
+    <!-- Daftar belanja (rekap gabungan, read-only) -->
+    <div id="belanja-area" hidden></div>
 
     <!-- Tambah pesanan baru -->
     <div class="toolbar">
